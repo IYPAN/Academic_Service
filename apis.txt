@@ -202,3 +202,16 @@ Authorization: Bearer <jwt_token>
 | Update Note | PUT | /api/notes/:id | teacher |
 | Delete Note | DELETE | /api/notes/:id | teacher |
 
+
+
+Gmeets APIs
+
+POST	/api/gmeets/	Create a new GMeet	{ "batch_id": "12345", "meet_link": "...", "date": "2024-02-20", "time": "10:30:00", "current": true, "note": "...", "title": "..." }
+
+GET	/api/gmeets/:batch_id	Get all GMeets for a batch	GET /api/gmeets/12345
+
+GET	/api/gmeets/meet/:meet_id	Get a specific GMeet by ID	GET /api/gmeets/meet/1
+
+PUT	/api/gmeets/:meet_id	Update a GMeet	{ "meet_link": "...", "current": false }
+
+DELETE	/api/gmeets/:meet_id	Delete a GMeet	DELETE /api/gmeets/1

@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 
 const batchRoutes = require("./routes/batchRoutes.js");
 const notesRoutes = require("./routes/notesRoutes.js");
+const gmeetRoutes = require("./routes/gmeetRoutes.js");
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api/batches", batchRoutes);
 app.use("/api/notes", notesRoutes);
+app.use("/api/gmeets", gmeetRoutes); 
 
 const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
