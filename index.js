@@ -1,9 +1,9 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const batchRoutes = require('./routes/batchRoutes.js');
-const supabase = require('./config/supabase.js');  // Ensure this file is correctly set up
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+
+const batchRoutes = require("./routes/batchRoutes.js");
+const notesRoutes = require("./routes/notesRoutes.js");
 
 dotenv.config();
 
@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/batches", batchRoutes);
+app.use("/api/notes", notesRoutes);
 
 const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
