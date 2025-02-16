@@ -1,0 +1,35 @@
+POST /api/batches
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "batch_name": "AI & ML",
+  "language": "English",
+  "type": "Online",
+  "duration": "6 months",
+  "center": "123e4567-e89b-12d3-a456-426614174000",
+  "teacher": "987e6543-e21b-34d3-a789-426614174111"
+}
+
+
+GET /api/batches
+Authorization: Bearer <jwt_token>
+
+GET /api/batches/1
+Authorization: Bearer <jwt_token>
+
+PUT /api/batches/1
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "batch_name": "Updated Name",
+  "language": "Hindi",
+  "type": "Offline",
+  "duration": "4 months",
+  "center": "new-center-id",
+  "teacher": "new-teacher-id"
+}
+
+DELETE /api/batches/1
+Authorization: Bearer <jwt_token>
