@@ -14,11 +14,29 @@ const createBatch = async (req, res) => {
 };
 
 const getBatches = async (req, res) => {
-    const { data, error } = await supabase.from("batches").select("*");
+    const { data, error } = await supabase
+        .from("batches")
+        .select(`
+            *,
+            center_details:centers(center_id, center_name),
+            teacher_details:teachers!inner(
+                teacher_info:users(id, name)
+            )
+        `);
 
     if (error) return res.status(400).json({ error: error.message });
 
-    res.json(data);
+    // Transform the response to flatten the nested objects
+    const transformedData = data.map(batch => ({
+        ...batch,
+        center_name: batch.center_details?.center_name,
+        teacher_name: batch.teacher_details?.teacher_info?.name,
+        // Remove the nested objects from the response
+        center_details: undefined,
+        teacher_details: undefined
+    }));
+
+    res.json(transformedData);
 };
 
 const getBatchById = async (req, res) => {
@@ -55,6 +73,7 @@ const deleteBatch = async (req, res) => {
 
     res.json({ message: "Batch deleted successfully" });
 };
+
 const approveStudent = async (req, res) => {
     const { student_id } = req.body;
 
