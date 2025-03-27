@@ -4,7 +4,7 @@ const authenticate = require("../config/authMiddleware.js");
 
 const router = express.Router();
 
-router.post("/", authenticate("academi"), createCourse);
-router.delete("/:id", authenticate("academic"), deleteCourse);
+router.post("/", authenticate("manager"), createCourse);
+router.delete("/:id", authenticate("manager"), deleteCourse);
 
 module.exports = router;

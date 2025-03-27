@@ -1,11 +1,15 @@
 const supabase = require("../config/supabase.js");
 
 const createBatch = async (req, res) => {
-    const { batch_name, language, type, duration, center, teacher } = req.body;
+    const { batch_name, language, type, duration, center, teacher, course_id } = req.body;
+
+    if (!course_id) {
+        return res.status(400).json({ error: "Course ID is required" });
+    }
 
     const { data, error } = await supabase
         .from("batches")
-        .insert([{ batch_name, language, type, duration, center, teacher }])
+        .insert([{ batch_name, language, type, duration, center, teacher, course_id }])
         .select();
 
     if (error) return res.status(400).json({ error: error.message });
@@ -21,7 +25,8 @@ const getBatches = async (req, res) => {
             center_details:centers(center_id, center_name),
             teacher_details:teachers!inner(
                 teacher_info:users(id, name)
-            )
+            ),
+            course:courses(id, course_name)
         `);
 
     if (error) return res.status(400).json({ error: error.message });
@@ -31,9 +36,11 @@ const getBatches = async (req, res) => {
         ...batch,
         center_name: batch.center_details?.center_name,
         teacher_name: batch.teacher_details?.teacher_info?.name,
+        course_name: batch.course?.course_name,
         // Remove the nested objects from the response
         center_details: undefined,
-        teacher_details: undefined
+        teacher_details: undefined,
+        course: undefined
     }));
 
     res.json(transformedData);
@@ -42,7 +49,14 @@ const getBatches = async (req, res) => {
 const getBatchById = async (req, res) => {
     const { id } = req.params;
 
-    const { data, error } = await supabase.from("batches").select("*").eq("batch_id", id).single();
+    const { data, error } = await supabase
+        .from("batches")
+        .select(`
+            *,
+            course:courses(id, course_name)
+        `)
+        .eq("batch_id", id)
+        .single();
 
     if (error) return res.status(400).json({ error: error.message });
 
@@ -51,11 +65,11 @@ const getBatchById = async (req, res) => {
 
 const updateBatch = async (req, res) => {
     const { id } = req.params;
-    const { batch_name, language, type, duration, center, teacher } = req.body;
+    const { batch_name, language, type, duration, center, teacher, course_id } = req.body;
 
     const { data, error } = await supabase
         .from("batches")
-        .update({ batch_name, language, type, duration, center, teacher })
+        .update({ batch_name, language, type, duration, center, teacher, course_id })
         .eq("batch_id", id)
         .select();
 
