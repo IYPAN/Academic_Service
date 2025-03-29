@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const batchRoutes = require("./routes/batchRoutes.js");
 const notesRoutes = require("./routes/notesRoutes.js");
 const gmeetRoutes = require("./routes/gmeetRoutes.js");
-const courseRoutes = require("./routes/courseRoutes.js");  // Add this line
+const courseRoutes = require("./routes/courseRoutes.js");  
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ app.use(express.json());
 app.use("/api/batches", batchRoutes);
 app.use("/api/notes", notesRoutes);
 app.use("/api/gmeets", gmeetRoutes);
-app.use("/api/courses", courseRoutes);  // Add this line
+app.use("/api/courses", courseRoutes);  
 
 const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {

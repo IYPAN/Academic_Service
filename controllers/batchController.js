@@ -1,49 +1,103 @@
 const supabase = require("../config/supabase.js");
 
 const createBatch = async (req, res) => {
-    const { batch_name, language, type, duration, center, teacher, course_id } = req.body;
+    const { batch_name, type, duration, center, teacher, course_id } = req.body;
 
-    if (!course_id) {
-        return res.status(400).json({ error: "Course ID is required" });
+    // Check for all required fields
+    if (!batch_name || !type || !duration || !center || !teacher || !course_id) {
+        return res.status(400).json({ 
+            error: "All fields are required: batch_name, type, duration, center, teacher, course_id" 
+        });
     }
 
-    const { data, error } = await supabase
-        .from("batches")
-        .insert([{ batch_name, language, type, duration, center, teacher, course_id }])
-        .select();
+    try {
+        // First verify if the course exists
+        const { data: courseExists, error: courseError } = await supabase
+            .from("courses")
+            .select("id")
+            .eq("id", course_id)
+            .single();
 
-    if (error) return res.status(400).json({ error: error.message });
+        if (courseError || !courseExists) {
+            return res.status(400).json({ error: "Invalid course ID" });
+        }
 
-    res.status(201).json({ message: "Batch created successfully", batch: data });
+        // Create batch with course relationship
+        const { data, error } = await supabase
+            .from("batches")
+            .insert([{ 
+                batch_name, 
+                type, 
+                duration, 
+                center, 
+                teacher, 
+                course_id
+            }])
+            .select(`
+                *,
+                course:courses(id, course_name)
+            `)
+            .single();
+
+        if (error) {
+            console.error("Database error:", error);
+            return res.status(400).json({ error: error.message });
+        }
+
+        res.status(201).json({ 
+            message: "Batch created successfully", 
+            batch: {
+                ...data,
+                course_name: data.course?.course_name
+            }
+        });
+    } catch (error) {
+        console.error("Server error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 };
 
 const getBatches = async (req, res) => {
-    const { data, error } = await supabase
-        .from("batches")
-        .select(`
-            *,
-            center_details:centers(center_id, center_name),
-            teacher_details:teachers!inner(
-                teacher_info:users(id, name)
-            ),
-            course:courses(id, course_name)
-        `);
+    try {
+        const { data, error } = await supabase
+            .from("batches")
+            .select(`
+                *,
+                center_details:centers(center_id, center_name),
+                teacher_details:teachers!inner(
+                    teacher_info:users(id, name)
+                ),
+                course:courses(id, course_name)
+            `);
 
-    if (error) return res.status(400).json({ error: error.message });
+        if (error) {
+            console.error("Database error:", error);
+            return res.status(400).json({ error: error.message });
+        }
 
-    // Transform the response to flatten the nested objects
-    const transformedData = data.map(batch => ({
-        ...batch,
-        center_name: batch.center_details?.center_name,
-        teacher_name: batch.teacher_details?.teacher_info?.name,
-        course_name: batch.course?.course_name,
-        // Remove the nested objects from the response
-        center_details: undefined,
-        teacher_details: undefined,
-        course: undefined
-    }));
+        // Transform the response to flatten the nested objects
+        const transformedData = data.map(batch => ({
+            ...batch,
+            center_name: batch.center_details?.center_name,
+            teacher_name: batch.teacher_details?.teacher_info?.name,
+            course_name: batch.course?.course_name,
+            // Remove the nested objects
+            center_details: undefined,
+            teacher_details: undefined,
+            course: undefined
+        }));
 
-    res.json(transformedData);
+        res.json({
+            success: true,
+            data: transformedData
+        });
+    } catch (error) {
+        console.error("Server error:", error);
+        res.status(500).json({ 
+            success: false,
+            error: "Internal server error" 
+        });
+    }
 };
 
 const getBatchById = async (req, res) => {
@@ -65,11 +119,11 @@ const getBatchById = async (req, res) => {
 
 const updateBatch = async (req, res) => {
     const { id } = req.params;
-    const { batch_name, language, type, duration, center, teacher, course_id } = req.body;
+    const { batch_name, type, duration, center, teacher, course_id } = req.body;
 
     const { data, error } = await supabase
         .from("batches")
-        .update({ batch_name, language, type, duration, center, teacher, course_id })
+        .update({ batch_name, type, duration, center, teacher, course_id })
         .eq("batch_id", id)
         .select();
 
