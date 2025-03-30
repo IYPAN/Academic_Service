@@ -1,12 +1,12 @@
 const supabase = require("../config/supabase.js");
 
 const createBatch = async (req, res) => {
-    const { batch_name, type, duration, center, teacher, course_id } = req.body;
+    const { batch_name, duration, center, teacher, course_id } = req.body;
 
-    // Check for all required fields
-    if (!batch_name || !type || !duration || !center || !teacher || !course_id) {
+    // Update required fields check
+    if (!batch_name || !duration || !center || !teacher || !course_id) {
         return res.status(400).json({ 
-            error: "All fields are required: batch_name, type, duration, center, teacher, course_id" 
+            error: "All fields are required: batch_name, duration, center, teacher, course_id" 
         });
     }
 
@@ -22,12 +22,11 @@ const createBatch = async (req, res) => {
             return res.status(400).json({ error: "Invalid course ID" });
         }
 
-        // Create batch with course relationship
+        // Create batch with updated fields
         const { data, error } = await supabase
             .from("batches")
             .insert([{ 
                 batch_name, 
-                type, 
                 duration, 
                 center, 
                 teacher, 
@@ -35,7 +34,7 @@ const createBatch = async (req, res) => {
             }])
             .select(`
                 *,
-                course:courses(id, course_name)
+                course:courses(id, course_name, type)
             `)
             .single();
 
@@ -48,7 +47,8 @@ const createBatch = async (req, res) => {
             message: "Batch created successfully", 
             batch: {
                 ...data,
-                course_name: data.course?.course_name
+                course_name: data.course?.course_name,
+                course_type: data.course?.type
             }
         });
     } catch (error) {
@@ -67,7 +67,7 @@ const getBatches = async (req, res) => {
                 teacher_details:teachers!inner(
                     teacher_info:users(id, name)
                 ),
-                course:courses(id, course_name)
+                course:courses(id, course_name, type)
             `);
 
         if (error) {
@@ -75,12 +75,13 @@ const getBatches = async (req, res) => {
             return res.status(400).json({ error: error.message });
         }
 
-        // Transform the response to flatten the nested objects
+        // Update transformed data to use course type from courses table
         const transformedData = data.map(batch => ({
             ...batch,
             center_name: batch.center_details?.center_name,
             teacher_name: batch.teacher_details?.teacher_info?.name,
             course_name: batch.course?.course_name,
+            course_type: batch.course?.type,
             // Remove the nested objects
             center_details: undefined,
             teacher_details: undefined,
@@ -119,11 +120,11 @@ const getBatchById = async (req, res) => {
 
 const updateBatch = async (req, res) => {
     const { id } = req.params;
-    const { batch_name, type, duration, center, teacher, course_id } = req.body;
+    const { batch_name, duration, center, teacher, course_id } = req.body;
 
     const { data, error } = await supabase
         .from("batches")
-        .update({ batch_name, type, duration, center, teacher, course_id })
+        .update({ batch_name, duration, center, teacher, course_id })
         .eq("batch_id", id)
         .select();
 
