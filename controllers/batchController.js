@@ -81,21 +81,10 @@ const approveStudent = async (req, res) => {
     const stateCode = student.state?.state_name?.slice(0, 2).toUpperCase() || "XX";
     const centerCode = student.center?.center_name?.slice(0, 2).toUpperCase() || "YY";
 
-    // Generate the next registration number (last 4 digits)
-    const { data: lastStudent } = await supabase
-        .from("students")
-        .select("registration_number")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+    // Generate a random 4-digit number (1000-9999)
+    const nextNumber = Math.floor(1000 + Math.random() * 9000);
 
-    let nextNumber = 1000; // Default start
-    if (lastStudent && lastStudent.registration_number) {
-        const lastNumber = parseInt(lastStudent.registration_number.slice(-4), 10);
-        nextNumber = isNaN(lastNumber) ? 1000 : lastNumber + 1;
-    }
-
-    // Correct format: ISML + StateCode + CenterCode + 4-digit number
+    // Correct format: ISML + StateCode + CenterCode + 4-digit random number
     const registrationNumber = `ISML${stateCode}${centerCode}${nextNumber}`;
 
     // Approve the student and update registration number
