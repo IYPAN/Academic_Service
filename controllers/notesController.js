@@ -15,7 +15,7 @@ exports.createNote = async (req, res) => {
 
 exports.getNotes = async (req, res) => {
     try {
-        const { batch_id } = req.query; // Extract batch_id from query params
+        const { batch_id } = req.query;
 
         if (!batch_id) {
             return res.status(400).json({ error: "Batch ID is required." });
@@ -23,8 +23,8 @@ exports.getNotes = async (req, res) => {
 
         const { data, error } = await supabase
             .from("notes")
-            .select("*")
-            .eq("batch_id", batch_id);  // 🔥 Filter by batch_id
+            .select("notes_id, created_at, link, batch_id, title, note") // Ensure notes_id is included
+            .eq("batch_id", batch_id);
 
         if (error) throw error;
 
