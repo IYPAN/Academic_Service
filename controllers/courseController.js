@@ -3,7 +3,7 @@ const supabase = require("../config/supabase.js");
 const createCourse = async (req, res) => {
     const { course_name, program, type, language, level, mode, duration } = req.body;
 
-    // Validate all required fields
+    // Validate all required field
     if (!course_name || !program || !type || !language || !level || !mode || !duration) {
         return res.status(400).json({ 
             error: "All fields are required: course_name, program, type, language, level, mode, duration" 
